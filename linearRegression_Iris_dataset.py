@@ -60,9 +60,11 @@ def computePredictions(X_train,slope,intercept):
 # I want to change some labels that we have a binary classification problem
 iris_dataset = pd.DataFrame(load_iris().data)
 target = load_iris().target
+flower_names = load_iris().target_names
 
 iris_dataset.columns = load_iris().feature_names
 iris_dataset['target'] = target
+
 
 plt.scatter(iris_dataset['sepal length (cm)'][0:50],
    iris_dataset['sepal width (cm)'][0:50])
@@ -75,7 +77,7 @@ plt.show()
 
 #%%
 
-# we can see in the plot above that we can seperate between 0 and not 0
+# we can see in the plot above that we can seperate between 0("setosa") and not 0 (versicular and verginica)
 iris_dataset.loc[ iris_dataset['target'] ==2, 'target'] = 1
 
 plt.scatter(iris_dataset['sepal length (cm)'][0:50],
@@ -97,9 +99,9 @@ b = -5
 line = lambda x: a * x + b
 
 plt.scatter(iris_dataset['sepal length (cm)'][0:50],
-   iris_dataset['sepal width (cm)'][0:50], label = '0')
+   iris_dataset['sepal width (cm)'][0:50], label = '0', marker = "+")
 plt.scatter(iris_dataset['sepal length (cm)'][50:150],
-   iris_dataset['sepal width (cm)'][50:150], label = '1')
+   iris_dataset['sepal width (cm)'][50:150], label = '1', marker = "D")
 plt.plot([4,8],[line(4),line(8)], '-r', label='y=2x+1')
 plt.legend()
 plt.xlim([4,8])
@@ -138,9 +140,9 @@ iris_dataset['target_predicted'] = target_predict
 
 # how many mispredictions?
 comparison = iris_dataset['target_predicted'] == iris_dataset['target']
-comparison.value_counts()
+print(comparison.value_counts())
 # only 2 wrong predictiosn
-
+# we already got a very good estimation
 
 
 
@@ -162,8 +164,25 @@ X_train = iris_dataset[['sepal length (cm)','sepal width (cm)']]
 y_train = iris_dataset['target']
 
 model = Perceptron(X_train,y_train)
-model.linearRegression()
 
+# before I let the algorithm do its magic I want to guess myself
+a = 1.5
+b = -5
+model.plotPredictionsByOwnGuessUsingLinearFunction(slope = a, intercept = b,
+                xlabel = 'Sepal width', ylabel = ' sepal length',
+    title = 'Binary classification with Perceptron slope = 1.5, b=-5',
+                addSeperationLine = True)
+
+#%% next lets try the perceptron algorithm
+
+# first I guess w and b
+w = [40,-40]
+b = -60
+model.plotPredictionsByOwnGuess(w = w,b = b,xlabel = 'Sepal width', ylabel = ' sepal length',
+    title = 'Binary classification with Perceptron w=[40,-40], b=-60', addSeperationLine= True)
+# pretty bad! But guessing is not easy with those w and b
+
+model.linearRegression()
 predictions = model.predictWithModel(X_train)
 
 print('Accuracy with the Perceptron model: ', model.getAccuracy(X_train, y_train))
@@ -171,6 +190,17 @@ print('Accuracy with the Perceptron model: ', model.getAccuracy(X_train, y_train
 model.plotPredictions(X_train,xlabel = 'Sepal width', ylabel = ' sepal length',
     title = 'Binary classification with Perceptron', addSeperationLine=True)
 
+
+
+
+#%% lets try our model with less training data but independent test data
+X = iris_dataset[['sepal length (cm)','sepal width (cm)']]
+y = iris_dataset['target']
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X,y,shuffle=True, test_size = 0.2)
+
+model.plotTrainingAndTestWithPerceptron(X_train, X_test, y_train, y_test,
+                                        addSeperationLine=True)   
 
 
 

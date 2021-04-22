@@ -53,7 +53,7 @@ class Perceptron:
     
     
     def linearRegression(self, w_initial=[0,0], b_initial=0, learning_rate=0.05, 
-                     numberOfIterations=1000000, min_acc=0.999):
+                     numberOfIterations=100000, min_acc=0.999, test_size = 0.2):
         '''
         Performs the algorithm.
 
@@ -82,7 +82,7 @@ class Perceptron:
         X = self.X
         y = self.y
         from sklearn.model_selection import train_test_split
-        X_train, X_test, y_train, y_test = train_test_split(X,y,shuffle=True, test_size = 0.2)
+        X_train, X_test, y_train, y_test = train_test_split(X,y,shuffle=True, test_size = test_size)
     
         X_train = X_train.reset_index(drop=True)
         X_test = X_test.reset_index(drop=True)
@@ -135,7 +135,9 @@ class Perceptron:
         target_predict : vector of predictions.
 
         '''
-        
+        w = self.w
+        if w == [0,0]:
+            self.linearRegression()
         w = self.w
         b= self.b
         
@@ -174,7 +176,7 @@ class Perceptron:
     
     
     def plotPredictions(self, X, xlabel = '', ylabel = '', title = '', 
-                        addSeperationLine = False):
+                        addSeperationLine = False, plotTrueTarget = True):
         '''
         Scatter plot for the points of the data frame X.
 
@@ -198,9 +200,175 @@ class Perceptron:
         '''
         
         x0, x1, xmin, xmax, ymin, ymax = self.__findZeroInFunction()
-        X['target'] = self.predictWithModel(X)
+
+        if plotTrueTarget:
+            X['target'] = self.y
+        else:
+            X['target'] = self.predictWithModel(X)
         
         plt.scatter(X.iloc[:,0],X.iloc[:,1], c = X['target'])
+        if addSeperationLine:
+            plt.plot([x0[0], x1[0]], [x0[1], x1[1]] , '-r', label='Seperation function')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.title(title)
+        plt.legend()
+        plt.xlim(xmin,xmax)
+        plt.ylim(ymin,ymax)
+        plt.show()
+        
+        
+    def plotPredictionsByOwnGuess(self, xlabel = '', ylabel = '', title = '', 
+                        addSeperationLine = False, w = [0,0], b = 0, plotTrueTarget = True):
+        '''
+        Scatter plot for the points of the data frame X.
+
+        Parameters
+        ----------
+        X : TYPE
+            DESCRIPTION: Data Frame with two columns.
+        xlabel : TYPE, optional
+            DESCRIPTION. The default is ''.
+        ylabel : TYPE, optional
+            DESCRIPTION. The default is ''.
+        title : TYPE, optional
+            DESCRIPTION. The default is ''.
+        addSeperationLine : TYPE, boolean, if True adds seperation line
+            DESCRIPTION. The default is False.
+        slope : TYPE, array 2dim, float.
+            DESCRIPTION. The default is [0,0].
+        intercept : TYPE, float.
+            DESCRIPTION. The default is 0.
+
+        Returns
+        -------
+        Plot.
+
+        '''
+        
+        X = self.X
+        x0, x1, xmin, xmax, ymin, ymax = self.__findZeroInFunction(ownW = w, ownB = b)
+
+        if plotTrueTarget:
+            X['target'] = self.y
+        else:
+            X['target'] = self.predictYourself(X, slope, intercept)
+        
+        plt.scatter(X.iloc[:,0],X.iloc[:,1], c = X['target'])
+        if addSeperationLine:
+            plt.plot([x0[0], x1[0]], [x0[1], x1[1]] , '-r', label='Seperation function')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.title(title)
+        plt.legend()
+        plt.xlim(xmin,xmax)
+        plt.ylim(ymin,ymax)
+        plt.show()
+        
+        
+    def plotPredictionsByOwnGuessUsingLinearFunction(self, xlabel = '', ylabel = '', title = '', 
+        addSeperationLine = False, slope = 1, intercept = 0, plotTrueTarget = True):
+        '''
+        Scatter plot for the points of the data frame X and regression line 
+        y = slope * x + b. Enables the user to guess the seperation line with
+        slope and intercept instead of the more difficult to under perceptron 
+        parameters w and b.
+
+        Parameters
+        ----------
+        X : TYPE
+            DESCRIPTION: Data Frame with two columns.
+        xlabel : TYPE, optional
+            DESCRIPTION. The default is ''.
+        ylabel : TYPE, optional
+            DESCRIPTION. The default is ''.
+        title : TYPE, optional
+            DESCRIPTION. The default is ''.
+        addSeperationLine : TYPE, boolean, if True adds seperation line
+            DESCRIPTION. The default is False.
+        slope : TYPE, float.
+            DESCRIPTION. The default is [0,0].
+        intercept : TYPE, float.
+            DESCRIPTION. The default is 0.
+
+        Returns
+        -------
+        Plot.
+
+        '''
+        
+        X = self.X
+        function = lambda x: x*slope + intercept
+        xmin, xmax, ymin, ymax = self.__findZeroInFunction(linear=True)
+        if plotTrueTarget:
+            X['target'] = self.y
+        else:
+            X['target'] = self.computePredictionsLinearFunction(X, slope, intercept)
+
+        
+        plt.scatter(X.iloc[:,0],X.iloc[:,1], c = X['target'])
+        if addSeperationLine:
+            plt.plot([xmin, xmax], [function(xmin), function(xmax)] , '-r', label='Seperation function')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.title(title)
+        plt.legend()
+        plt.xlim(xmin,xmax)
+        plt.ylim(ymin,ymax)
+        plt.show()
+        
+        
+        
+    def plotTrainingAndTestWithPerceptron(self,X_training, X_test, y_training, y_test,
+                                          xlabel = '', ylabel = '',
+            title = '', addSeperationLine = False, plotTrueTarget = True):
+ 
+        '''
+        Scatter plot for the points of the data frame X and regression line 
+        calculated by perceptron. Dots are seperated by Train and test set.
+
+        Parameters
+        ----------
+        X_training : TYPE data frame Xx2.
+            DESCRIPTION. training data
+        X_test : TYPE data frame Xx2.
+            DESCRIPTION.Test data
+        y_training : TYPE array.
+            DESCRIPTION. True labels for training set.
+        y_test : TYPE array.
+            DESCRIPTION.True label for test set.
+        xlabel : TYPE, optional
+            DESCRIPTION. Label x-axis. The default is ''.
+        ylabel : TYPE, optional
+            DESCRIPTION. Label y-axis.The default is ''.
+        title : TYPE, optional
+            DESCRIPTION. Title of plot. The default is ''.
+        addSeperationLine : TYPE, boolean.
+            DESCRIPTION. If True, seperation line from perceptron is drawed. 
+            The default is False.
+        plotTrueTarget : TYPE, optional
+            DESCRIPTION. Option to plot predictions or true tragets. The default is True.
+
+        Returns
+        -------
+        None.
+
+        '''
+        
+        if plotTrueTarget:
+            X_training['target'] = y_training
+            X_test['target'] = y_test
+        else:
+            X_training['target'] = self.predictWithModel(X)
+            X_test['target'] = self.predictWithModel(X)
+            
+        x0, x1, xmin, xmax, ymin, ymax = self.__findZeroInFunction()
+        
+        plt.scatter(X_training.iloc[:,0],X_training.iloc[:,1], c = X_training['target'],
+                    marker = "D", label ="training")
+        plt.scatter(X_test.iloc[:,0],X_test.iloc[:,1], c = X_test['target'], 
+                    marker = "+", label = "test")
+        
         if addSeperationLine:
             plt.plot([x0[0], x1[0]], [x0[1], x1[1]] , '-r', label='Seperation function')
         plt.xlabel(xlabel)
@@ -215,7 +383,7 @@ class Perceptron:
         
         
         
-    def __findZeroInFunction(self):
+    def __findZeroInFunction(self, ownW = [0,0], ownB = 0, linear = False):
         '''
         Calculates zero point for the regression function
 
@@ -227,13 +395,24 @@ class Perceptron:
             DESCRIPTION. second point
 
         '''
-        w = self.w
-        b = self.b
         X = self.X
         x_min = min(X.iloc[:,0]) - 1
         x_max = max(X.iloc[:,0]) + 1
         y_min = min(X.iloc[:,1]) - 1
         y_max = max(X.iloc[:,1]) + 1
+        
+        if linear:
+            return x_min, x_max, y_min, y_max
+        
+        if ownW != [0,0]:
+            w = ownW
+        else:
+            w = self.w
+        if ownB != 0:
+            b = ownB
+        else:
+            b = self.b
+        
 
         x0 = 0
         y0 = -b/w[1]
@@ -259,7 +438,48 @@ class Perceptron:
         return firstPoint, secondPoint, x_min, x_max, y_min, y_max
 
         
-        
+    def computePredictionsLinearFunction(self, X_train,slope,intercept):
+        '''
+        Function to compute predictions for a linear function with slope and 
+        intercept given by the user.
+
+        Parameters
+        ----------
+        X_train : TYPE: Data Frame with two columns.
+            DESCRIPTION.
+        slope : TYPE: double 
+            DESCRIPTION. Slope of the function
+        intercept : TYPE: double
+            DESCRIPTION. Interception of function.
+
+        Returns
+        -------
+        target_predict : Array.
+            DESCRIPTION. returns the array with the predictions. (0,1)
+
+        '''
+        regLine = lambda x: slope * x + intercept
+        x1, x2 = 0, 1
+        y1, y2 = regLine(0), regLine(1)
+    
+        v1 = (x2-x1, y2-y1)   # Vector 1
+        target_predict = []
+
+        for i in range(len(X_train)):
+            xA = X_train.iloc[:,0][i]
+            yA = X_train.iloc[:,1][i]
+            v2 = (x2-xA, y2-yA)   # Vector 2
+
+            xp = v1[0]*v2[1] - v1[1]*v2[0]  # Cross product
+
+            if xp > 0:
+                target_predict.append(1)
+            elif xp < 0:
+                target_predict.append(0)
+            else:
+                target_predict.append(1)
+
+        return target_predict        
         
         
         
