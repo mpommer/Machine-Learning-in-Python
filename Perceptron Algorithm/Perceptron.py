@@ -53,7 +53,7 @@ class Perceptron:
     
     
     def linearRegression(self, w_initial=[0,0], b_initial=0, learning_rate=0.05, 
-                     numberOfIterations=100000, min_acc=0.999, test_size = 0.2):
+        numberOfIterations=100000, min_acc=0.999, test_size = 0.2, countIterations = False):
         '''
         Performs the algorithm.
 
@@ -79,11 +79,18 @@ class Perceptron:
             DESCRIPTION. Intercept for regression line.
 
         '''
+        if countIterations:
+            count = 0
         X = self.X
         y = self.y
-        from sklearn.model_selection import train_test_split
-        X_train, X_test, y_train, y_test = train_test_split(X,y,shuffle=True, test_size = test_size)
-    
+        if test_size != 0:
+            from sklearn.model_selection import train_test_split
+            X_train, X_test, y_train, y_test = train_test_split(X,y,shuffle=True, test_size = test_size)
+        else:
+            X_train = X
+            y_train = y
+            X_test = X
+            y_test = y
         X_train = X_train.reset_index(drop=True)
         X_test = X_test.reset_index(drop=True)
         y_train = y_train.reset_index(drop=True)
@@ -103,7 +110,8 @@ class Perceptron:
         
             if(acc_train> min_acc and acc_test> 0.9):
                 break
-
+            if countIterations:
+                count += 1
         # update rule
             delta = y_train - y_pred_train
         
@@ -112,9 +120,13 @@ class Perceptron:
                 w[1] = w[1] + learning_rate*delta[j]*X_train.iloc[:,1][j]
             
                 b = b + learning_rate * delta[j]      
-        
+
+                    
         self.w = w
         self.b = b
+        if countIterations:
+            return w,b, count
+        
         return w,b
     
     
