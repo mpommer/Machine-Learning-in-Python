@@ -252,7 +252,7 @@ class Perceptron:
         if plotTrueTarget:
             X['target'] = self.y
         else:
-            X['target'] = self.predictYourself(X, slope, intercept)
+            X['target'] = self.predictYourself(X, w, b)
         
         plt.scatter(X.iloc[:,0],X.iloc[:,1], c = X['target'])
         if addSeperationLine:
@@ -359,8 +359,8 @@ class Perceptron:
             X_training['target'] = y_training
             X_test['target'] = y_test
         else:
-            X_training['target'] = self.predictWithModel(X)
-            X_test['target'] = self.predictWithModel(X)
+            X_training['target'] = self.predictWithModel(X_training)
+            X_test['target'] = self.predictWithModel(X_test)
             
         x0, x1, xmin, xmax, ymin, ymax = self.__findZeroInFunction()
         
