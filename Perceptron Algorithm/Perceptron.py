@@ -10,15 +10,22 @@ and two features.
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import sys
+sys.path
+sys.path.append('C:/Users/marce/Documents/Dokumente/Python Scripts/machine learning\
+                projekte/Own algorithms/Machine-Learning-in-Python/Perceptron Algorithm')
+from LinearClassifier import LinearRegression
 
-
-class Perceptron:    
+              
+class Perceptron(LinearRegression):    
     
     def __init__(self, X, y):
         self.X = X
         self.y = y
         self.w = [0,0]
         self.b = 0
+        
+        super.__init__(self, X, y)
         
         
         
@@ -52,7 +59,7 @@ class Perceptron:
         return target_predict
     
     
-    def linearRegression(self, w_initial=[0,0], b_initial=0, learning_rate=0.05, 
+    def performRegression(self, w_initial=[0,0], b_initial=0, learning_rate=0.05, 
         numberOfIterations=100000, min_acc=0.999, test_size = 0.2, countIterations = False):
         '''
         Performs the algorithm.
