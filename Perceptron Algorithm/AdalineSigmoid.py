@@ -96,22 +96,21 @@ class ADALINESigmoid(LinearRegression):
                 for j in range(len(w)):
                     value += w[j] * X_train.iloc[i,:][j]
                 wTimesXPlusB.append(value + b)
-            wTimesXPlusB = wTimesXPlusB   
+            
                         
-            gradientDecent =  abs(y_train - wTimesXPlusB) 
+            gradientDecent =  abs(y_train - (2* self.sigmoid(wTimesXPlusB) -1))
             testMulti = []
             for j in range(len(w)):
                 sum = 0
                 for i in range(len(X_train)):
-                    sum += (y_train[i] - (4* self.sigmoid(wTimesXPlusB[i])-1))* X_train.iloc[:,j][i]\
-                        * self.sigmoidDerivative(wTimesXPlusB[i])*4
+                    sum += (y_train[i] - (2* self.sigmoid(wTimesXPlusB[i])-1))* X_train.iloc[:,j][i]\
+                        * self.sigmoidDerivative(wTimesXPlusB[i])*2
                 testMulti.append(sum)
                             
             for i in range(len(w)):                    
                 w[i] = w[i] + learning_rate * testMulti[i]
             b = b + learning_rate * np.sum(gradientDecent)     
-            print("W: ", w)
-            print("b: ", b)
+
         self.w = w
         self.b = b
         if countIterations:
@@ -128,7 +127,7 @@ class ADALINESigmoid(LinearRegression):
             for j in range(len(w)):
                 sum += w[j] * X.iloc[i,:][j]
             sum += b
-            target_predict.append(np.sign(4*self.sigmoid(sum)-1).astype(int))
+            target_predict.append(np.sign(2*self.sigmoid(sum)-1).astype(int))
 
         return target_predict
             
@@ -148,6 +147,23 @@ class ADALINESigmoid(LinearRegression):
         acc = np.sum(y_pred == y)/len(X)
         return acc
         
+    def loss(self):
+        X = self.X
+        y = self.y
+        w = self.w
+        b = self.b
+        
+        wTimesXPlusB = []
+        for i in range(len(X)):
+             value = 0
+             for j in range(len(w)):
+                 value += w[j] * X.iloc[i,:][j]
+             wTimesXPlusB.append(value + b)
+        wTimesXPlusB = 2*self.sigmoid(wTimesXPlusB)-1
+                        
+        gradientDecent =  (y - wTimesXPlusB) **2 
+
+        return np.sum(gradientDecent)
         
         
         
