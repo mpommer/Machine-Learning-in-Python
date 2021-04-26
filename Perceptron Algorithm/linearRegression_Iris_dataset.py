@@ -156,6 +156,8 @@ print(comparison.value_counts())
 #%%
 # lets test the perceptron function
 
+from LinearClassifier import LinearRegression
+
 from Perceptron import Perceptron
 # change target variable from 0 to -1
 iris_dataset.loc[ iris_dataset['target'] ==0, 'target'] = -1
@@ -182,7 +184,7 @@ model.plotPredictionsByOwnGuess(w = w,b = b,xlabel = 'Sepal width', ylabel = ' s
     title = 'Binary classification with Perceptron w=[40,-40], b=-60', addSeperationLine= True)
 # pretty bad! But guessing is not easy with those w and b
 
-model.linearRegression()
+model.performRegression()
 predictions = model.predictWithModel(X_train)
 
 print('Accuracy with the Perceptron model: ', model.getAccuracy(X_train, y_train))
@@ -201,6 +203,122 @@ X_train, X_test, y_train, y_test = train_test_split(X,y,shuffle=True, test_size 
 
 model.plotTrainingAndTestWithPerceptron(X_train, X_test, y_train, y_test,
                                         addSeperationLine=True)   
+
+
+w = [-50,-50]
+b = -50
+c = w*b
+compre = [i*j for i,j in zip(w,X.iloc[0,:][0])]
+
+test = []
+for i in range(len(X)):
+    value = 0
+    for j in range(len(w)):
+        value += w[j] * X.iloc[i,:][j]
+    test.append(value + b)
+
+np.exp(w)
+
+len(X)
+X.shape[1]
+
+
+def sigmoid(x):
+     sigmoid = lambda x: np.exp(x)/(1+np.exp(x))
+     value = sigmoid(x)
+     return value
+
+        
+def sigmoidDerivative(x):
+    sigmoidDerivative = lambda x: sigmoid(x)*(1-sigmoid(x))
+    return sigmoidDerivative(x)
+
+target_predict = []
+for i in range(len(X)):
+    sum = 0
+    for j in range(X.shape[1]):
+        sum += w[j] * X.iloc[i,:][j]
+    target_predict.append(np.sign(sigmoid(sum)-0.5).astype(int))
+
+j = 0
+
+
+print(sigmoid(-10))
+
+
+X.iloc[:,0]
+
+
+from AdalineAlgorithm import ADALINE
+
+model = ADALINE(X,y)
+
+model.performRegression()
+model.accuracy(X,y)
+
+
+from AdalineSigmoid import ADALINESigmoid
+
+model = ADALINESigmoid(X,y)
+
+model.performRegression(numberOfIterations=20000)
+model.accuracy(X,y)
+
+
+
+
+wTimesXPlusB = []
+for i in range(len(X)):
+    value = 0
+    for j in range(len(w)):
+        value += w[j] * X.iloc[i,:][j]
+    wTimesXPlusB.append(value + b)
+
+gradientDecent =  -abs(y - sigmoid(wTimesXPlusB)) * sigmoidDerivative(wTimesXPlusB)
+
+np.sum(w)
+
+w = [1,1]
+b = 1
+
+for i in range(1000):
+    wTimesXPlusB = []
+    for i in range(len(X)):
+        value = 0
+        for j in range(len(w)):
+            value += w[j] * X.iloc[i,:][j]
+        wTimesXPlusB.append(value + b)
+                
+                
+    gradientDecent =  (y_train - wTimesXPlusB) 
+    testMulti = []
+    for j in range(2):
+        sum = 0
+        for i in range(len(X)):
+            sum += (y_train[i] - wTimesXPlusB[i])* X.iloc[:,j][i]
+        testMulti.append(sum)
+                    
+    for i in range(2):                    
+        w[i] = w[i] + 0.0001 * testMulti[i]
+    b = b + 0.0001 * np.sum(gradientDecent)  
+
+
+
+target_predict = []
+for i in range(len(X)):
+    sum = 0
+    for j in range(X.shape[1]):
+        sum += w[j] * X.iloc[i,:][j]
+        sum += b
+    target_predict.append(np.sign(sum).astype(int))
+
+
+
+
+
+
+
+
 
 
 

@@ -23,11 +23,6 @@ class LinearRegression(metaclass=abc.ABCMeta):
 
         '''
         
-    @abc.abstractmethod
-    def accuracy(self, X, y):
-        '''
-        returns accuarcy of the model for the data X and labels y.
-        '''
         
         
     def returnDataSet(self):
