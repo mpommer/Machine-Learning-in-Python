@@ -25,7 +25,7 @@ class Perceptron(LinearRegression):
         self.w = [0,0]
         self.b = 0
         
-        super.__init__(self, X, y)
+        super().__init__(X, y)
         
         
         
@@ -219,13 +219,13 @@ class Perceptron(LinearRegression):
         '''
         
         x0, x1, xmin, xmax, ymin, ymax = self.__findZeroInFunction()
-
+        X_plot = X.copy(deep=True)
         if plotTrueTarget:
-            X['target'] = self.y
+            X_plot['target'] = self.y
         else:
-            X['target'] = self.predictWithModel(X)
+            X_plot['target'] = self.predictWithModel(X)
         
-        plt.scatter(X.iloc[:,0],X.iloc[:,1], c = X['target'])
+        plt.scatter(X_plot.iloc[:,0],X_plot.iloc[:,1], c = X_plot['target'])
         if addSeperationLine:
             plt.plot([x0[0], x1[0]], [x0[1], x1[1]] , '-r', label='Seperation function')
         plt.xlabel(xlabel)
@@ -265,15 +265,15 @@ class Perceptron(LinearRegression):
 
         '''
         
-        X = self.X
+        X_plot = self.X.copy(deep=True)
         x0, x1, xmin, xmax, ymin, ymax = self.__findZeroInFunction(ownW = w, ownB = b)
 
         if plotTrueTarget:
-            X['target'] = self.y
+            X_plot['target'] = self.y
         else:
-            X['target'] = self.predictYourself(X, w, b)
+            X_plot['target'] = self.predictYourself(X_plot, w, b)
         
-        plt.scatter(X.iloc[:,0],X.iloc[:,1], c = X['target'])
+        plt.scatter(X_plot.iloc[:,0],X_plot.iloc[:,1], c = X_plot['target'])
         if addSeperationLine:
             plt.plot([x0[0], x1[0]], [x0[1], x1[1]] , '-r', label='Seperation function')
         plt.xlabel(xlabel)
@@ -316,16 +316,16 @@ class Perceptron(LinearRegression):
 
         '''
         
-        X = self.X
+        X_plot = self.X.copy(deep=True)
         function = lambda x: x*slope + intercept
         xmin, xmax, ymin, ymax = self.__findZeroInFunction(linear=True)
         if plotTrueTarget:
-            X['target'] = self.y
+            X_plot['target'] = self.y
         else:
-            X['target'] = self.computePredictionsLinearFunction(X, slope, intercept)
+            X_plot['target'] = self.computePredictionsLinearFunction(X_plot, slope, intercept)
 
         
-        plt.scatter(X.iloc[:,0],X.iloc[:,1], c = X['target'])
+        plt.scatter(X_plot.iloc[:,0],X_plot.iloc[:,1], c = X_plot['target'])
         if addSeperationLine:
             plt.plot([xmin, xmax], [function(xmin), function(xmax)] , '-r', label='Seperation function')
         plt.xlabel(xlabel)
@@ -373,7 +373,8 @@ class Perceptron(LinearRegression):
         None.
 
         '''
-        
+        X_training = X_training.copy(deep=True)
+        y_training = y_training.copy(deep=True)
         if plotTrueTarget:
             X_training['target'] = y_training
             X_test['target'] = y_test

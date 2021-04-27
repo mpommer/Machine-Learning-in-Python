@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import load_iris
 import matplotlib.pyplot as plt
+pd.options.mode.chained_assignment = None 
 
 #%%
 def computePredictions(X_train,slope,intercept):
@@ -156,8 +157,6 @@ print(comparison.value_counts())
 #%%
 # lets test the perceptron function
 
-from LinearClassifier import LinearRegression
-
 from Perceptron import Perceptron
 # change target variable from 0 to -1
 iris_dataset.loc[ iris_dataset['target'] ==0, 'target'] = -1
@@ -205,112 +204,30 @@ model.plotTrainingAndTestWithPerceptron(X_train, X_test, y_train, y_test,
                                         addSeperationLine=True)   
 
 
-w = [-50,-50]
-b = -50
-c = w*b
-compre = [i*j for i,j in zip(w,X.iloc[0,:][0])]
-
-test = []
-for i in range(len(X)):
-    value = 0
-    for j in range(len(w)):
-        value += w[j] * X.iloc[i,:][j]
-    test.append(value + b)
-
-np.exp(w)
-
-len(X)
-X.shape[1]
 
 
-def sigmoid(x):
-     sigmoid = lambda x: np.exp(x)/(1+np.exp(x))
-     value = sigmoid(x)
-     return value
-
-        
-def sigmoidDerivative(x):
-    sigmoidDerivative = lambda x: sigmoid(x)*(1-sigmoid(x))
-    return sigmoidDerivative(x)
-
-target_predict = []
-for i in range(len(X)):
-    sum = 0
-    for j in range(X.shape[1]):
-        sum += w[j] * X.iloc[i,:][j]
-    target_predict.append(np.sign(sigmoid(sum)-0.5).astype(int))
-
-j = 0
 
 
-print(sigmoid(-10))
+#%% ADALINE 
 
-
-X.iloc[:,0]
-
-
-from AdalineAlgorithm import ADALINE
-
-model = ADALINE(X,y)
-
-model.performRegression()
-model.accuracy(X,y)
-
-
+from AdalineAlgorithm import ADALINELinear
 from AdalineSigmoid import ADALINESigmoid
+
+model = ADALINELinear(X,y)
+w_initial, b_initial = [0.5,-0.5], -1
+model.performRegression(w_initial = w_initial, b_initial = b_initial,
+                        learning_rate=0.00005, numberOfIterations=100)
+model.accuracy(X,y)
+model.plotPredictions(X, addSeperationLine = True)
+
+
+
 
 model = ADALINESigmoid(X,y)
 
-model.performRegression(numberOfIterations=20000)
+model.performRegression(numberOfIterations=2000, learning_rate = 0.0001)
 model.accuracy(X,y)
 
-
-
-
-wTimesXPlusB = []
-for i in range(len(X)):
-    value = 0
-    for j in range(len(w)):
-        value += w[j] * X.iloc[i,:][j]
-    wTimesXPlusB.append(value + b)
-
-gradientDecent =  -abs(y - sigmoid(wTimesXPlusB)) * sigmoidDerivative(wTimesXPlusB)
-
-np.sum(w)
-
-w = [1,1]
-b = 1
-
-for i in range(1000):
-    wTimesXPlusB = []
-    for i in range(len(X)):
-        value = 0
-        for j in range(len(w)):
-            value += w[j] * X.iloc[i,:][j]
-        wTimesXPlusB.append(value + b)
-                
-                
-    gradientDecent =  (y_train - wTimesXPlusB) 
-    testMulti = []
-    for j in range(2):
-        sum = 0
-        for i in range(len(X)):
-            sum += (y_train[i] - wTimesXPlusB[i])* X.iloc[:,j][i]
-        testMulti.append(sum)
-                    
-    for i in range(2):                    
-        w[i] = w[i] + 0.0001 * testMulti[i]
-    b = b + 0.0001 * np.sum(gradientDecent)  
-
-
-
-target_predict = []
-for i in range(len(X)):
-    sum = 0
-    for j in range(X.shape[1]):
-        sum += w[j] * X.iloc[i,:][j]
-        sum += b
-    target_predict.append(np.sign(sum).astype(int))
 
 
 
