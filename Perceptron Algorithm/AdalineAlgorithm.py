@@ -18,7 +18,7 @@ from LinearClassifier import LinearRegression
 class ADALINELinear(LinearRegression): 
     def __init__(self, X, y):
         '''
-        
+        Create an instance of Adaline linear
 
         Parameters
         ----------

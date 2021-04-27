@@ -1,34 +1,41 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Apr 26 22:07:50 2021
-ADALINE algorithmus to classify data. The class uses a sigmoid activation function 
-f(x) = 2* e^/(1+e^) -1
+ADALINE algorithmus to classify data. The class uses the activation function 
+which is surpassed by the user. In order for the algorithm to work
+the user is requiered to pass a function using lambda expression and 
+mpmath for complex expressions. Otherwise the class cannot compute 
+the derivative.
 
-For more complex activation functions see ADALINEActivation.
-For less complex activation functions see ADALINELinear.
+For more complex activation functionwhich is already preimplemented
+see ADALINEActivation (f(x) = 2* e^/(1+e^) -1).
+For less complex activation functions see ADALINELinear (f(x) = x).
 @author: Marcel Pommer
 """
 
+
 import numpy as np
 import matplotlib.pyplot as plt
-
+import mpmath 
+import math
+mpmath.pretty = True
 from LinearClassifier import LinearRegression
 
 
-class ADALINESigmoid(LinearRegression): 
-    def __init__(self, X, y):
+class ADALINEActivation(LinearRegression): 
+    def __init__(self, X, y, acitvationFunction):
         super().__init__(X, y)
         self.numberOfFeatures = X.shape[1]
         self.X = X
         self.y = y
         self.w = [0] * self.numberOfFeatures
         self.b = 0      
+        self.activationFuncition = acitvationFunction
         
         
         
         
     def performRegression(self, w_initial= 0, b_initial=0, learning_rate=0.00005, 
-        numberOfIterations=10000, min_acc=0.999, test_size = 0.2, countIterations = False):
+        numberOfIterations=10000, min_acc=0.95, test_size = 0.2, countIterations = False):
         '''
         Performs the algorithm.
 
@@ -46,7 +53,7 @@ class ADALINESigmoid(LinearRegression):
             DESCRIPTION. Max Number of Interations. The default is 10000.
         min_acc : TYPE, double.
             DESCRIPTION. As soon as the minimum accuracy is reached the algorithm stops.
-            The default is 0.999.
+            The default is 0.95.
         test_size : TYPE, double(or int).
             DESCRIPTION. Portion of data used for testing.
         countIterations : TYPE, boolean.
@@ -87,14 +94,14 @@ class ADALINESigmoid(LinearRegression):
         
 
         for i in range(numberOfIterations):
-            y_pred_train = self.predictYourselfSigmoid(X_train, w, b)
-            y_pred_test = self.predictYourselfSigmoid(X_test, w, b)
+            y_pred_train = self.predictYourselfActivation(X_train, w, b)
+            y_pred_test = self.predictYourselfActivation(X_test, w, b)
 
         # get accuracy training and test set
             acc_train = np.sum(y_pred_train == y_train)/len(X_train)
             acc_test = np.sum(y_pred_test == y_test)/len(X_test)
         
-            if(acc_train> min_acc and acc_test> 0.9):
+            if(acc_train>= min_acc and acc_test>= 0.9):
                 break
             if countIterations:
                 count += 1
@@ -107,15 +114,21 @@ class ADALINESigmoid(LinearRegression):
                     value += w[j] * X_train.iloc[i,:][j]
                 wTimesXPlusB.append(value + b)
             
-                        
-            gradientDecent =  abs(y_train - (2* self.sigmoid(wTimesXPlusB) -1))\
-                * self.sigmoidDerivative(wTimesXPlusB)*2
+            derivatives = []
+            for i in range(len(wTimesXPlusB)):
+                derivatives.append(float(self.activationFunctionDerivative(wTimesXPlusB[i])))
+            
+            gradientDecent = []
+            for i in range(len(derivatives)):
+                gradientDecent.append(abs(y_train[i] - self.activationFunction(wTimesXPlusB[i]))\
+                                      * derivatives[i])
+                    
             testMulti = []
             for j in range(len(w)):
                 sum = 0
                 for i in range(len(X_train)):
-                    sum += (y_train[i] - (2* self.sigmoid(wTimesXPlusB[i])-1))* X_train.iloc[:,j][i]\
-                        * self.sigmoidDerivative(wTimesXPlusB[i])*2
+                    sum += (y_train[i] - self.activationFunction(wTimesXPlusB[i]))* X_train.iloc[:,j][i]\
+                        * derivatives[i]
                 testMulti.append(sum)
                             
             for i in range(len(w)):                    
@@ -130,7 +143,7 @@ class ADALINESigmoid(LinearRegression):
         return w,b        
 
         
-    def predictYourselfSigmoid(self, X, w,b):
+    def predictYourselfActivation(self, X, w,b):
         '''
         Creats the predictions for w and b defined by the user.
 
@@ -156,15 +169,15 @@ class ADALINESigmoid(LinearRegression):
             for j in range(len(w)):
                 sum += w[j] * X.iloc[i,:][j]
             sum += b
-            target_predict.append(np.sign(2*self.sigmoid(sum)-1).astype(int))
+            target_predict.append(np.sign(self.activationFunction(sum)))
 
         return target_predict
             
             
             
-    def sigmoid(self, x):
+    def activationFunction(self, x):
         '''
-        Sigmoid function.
+        Activation function function.
 
         Parameters
         ----------
@@ -178,10 +191,10 @@ class ADALINESigmoid(LinearRegression):
 
         '''        
         
-        sigmoid = lambda x: np.exp(x)/(1+np.exp(x))
-        return sigmoid(x)
+        afunction = self.activationFuncition
+        return float(afunction(x))
         
-    def sigmoidDerivative(self, x):
+    def activationFunctionDerivative(self, x):
         '''
         Sigmoid derivative function.
 
@@ -196,12 +209,13 @@ class ADALINESigmoid(LinearRegression):
             DESCRIPTION. returns the value of the dsigmoid(x)/dx
 
         '''
-        sigmoidDerivative = lambda x: self.sigmoid(x)*(1-self.sigmoid(x))
-        return sigmoidDerivative(x)
+        afunction = self.activationFuncition
+        
+        return float(mpmath.diff(afunction,x))
         
     
     def accuracy(self, X, y):
-        y_pred = self.predictYourselfSigmoid(X, self.w, self.b)
+        y_pred = self.predictYourselfActivation(X, self.w, self.b)
         acc = np.sum(y_pred == y)/len(X)
         return acc
         
@@ -227,10 +241,13 @@ class ADALINESigmoid(LinearRegression):
              value = 0
              for j in range(len(w)):
                  value += w[j] * X.iloc[i,:][j]
-             wTimesXPlusB.append(value + b)
-        wTimesXPlusB = 2*self.sigmoid(wTimesXPlusB)-1
+             wTimesXPlusB.append(self.activationFunction(value + b))
+        
                         
-        gradientDecent =  (y - wTimesXPlusB) **2 
+        gradientDecent = []
+        for i in range(len(wTimesXPlusB)):
+            gradientDecent.append((y[i] - wTimesXPlusB[i]) **2)
+        
 
         return np.sum(gradientDecent)
     
@@ -267,7 +284,7 @@ class ADALINESigmoid(LinearRegression):
         if plotTrueTarget:
             X['target'] = self.y
         else:
-            X['target'] = self.predictYourselfSigmoid(X, self.w, self.b)
+            X['target'] = self.predictYourselfActivation(X, self.w, self.b)
         
         plt.scatter(X.iloc[:,0],X.iloc[:,1], c = X['target'])
         if addSeperationLine:
@@ -319,11 +336,12 @@ class ADALINESigmoid(LinearRegression):
         else:
             b = self.b
         
-        # Note! The goal is to find x, s.t. 2*sigmoid(w*x+b) - 1 ==0
-        # which leads to 1/(1+e^x) = 1 --> wx+b == 0
+        zero = self.bisection(self.activationFuncition)
+        
+        
         x0 = 0
-        y0 = -b/w[1]
-        x1 = -b/w[0]
+        y0 = (zero-b)/w[1]
+        x1 = (zero-b)/w[0]
         y1 = 0
 
         if x0 > x1:
@@ -342,5 +360,60 @@ class ADALINESigmoid(LinearRegression):
               
         return firstPoint, secondPoint, x_min, x_max, y_min, y_max
                 
+    def bisection(self, function, xmin = -100000, xmax= 1000000,epsilon = 0.000001):
+        '''
+        Finds zero point in any function.
+
+        Parameters
+        ----------
+        function : TYPE lambda function
+            DESCRIPTION.
+        xmin : TYPE, float
+            DESCRIPTION. The default is -100000.
+        xmax : TYPE, float
+            DESCRIPTION. The default is 1000000.
+        epsilon : TYPE, float (precision)
+            DESCRIPTION. The default is 0.000001.
+
+        Returns
+        -------
+        xMiddle : TYPE float
+            DESCRIPTION. x value of zero point
+
+        '''
+        error = 1
+        count = 0
+        while error > epsilon and count < 1000000:
+            xMiddle = (xmin + xmax)/2
+            if np.sign(self.activationFuncition(xMiddle)) == np.sign(self.activationFuncition(xmin)):
+                xmin = xMiddle
+            else:
+                xmax = xMiddle
+            count += 1
+            error = abs(function(xMiddle))
+        return xMiddle        
         
-        
+    def plotEvolutionOfRegLine(self, X, iterations=5, updatesPerIteration = 500, min_acc = 0.95):
+        '''
+        Plots the evolution of the regression line. Migh be interesting to obsere the
+        convergence.
+
+        Parameters
+        ----------
+        X : TYPE
+            DESCRIPTION.
+        iterations : TYPE, int, number of ploty
+            DESCRIPTION. The default is 5.
+        updatesPerIteration : TYPE, int, number of updates per plot.
+            DESCRIPTION. The default is 500.
+        min_acc : TYPE, float
+            DESCRIPTION. The default is 0.95.
+
+        Returns
+        -------
+        None.
+
+        '''
+        for i in range(iterations):
+            self.performRegression(numberOfIterations = updatesPerIteration, min_acc=min_acc)
+            self.plotPredictions(X, addSeperationLine = True)

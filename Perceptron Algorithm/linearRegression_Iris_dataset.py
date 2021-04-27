@@ -8,6 +8,7 @@ Test of the class Perceptron which performs the Perceptron algorithm.
 import numpy as np
 import pandas as pd
 from sklearn.datasets import load_iris
+import math
 import matplotlib.pyplot as plt
 import sys
 sys.path
@@ -240,15 +241,95 @@ model.plotPredictions(X, addSeperationLine = True)
 
 
 
+#%% Variable activation function
+
+import mpmath
+mpmath.pretty = True
+x = 2
+function = lambda x: x**2 +x
+mpmath.diff(function, x)
+
+import sys
+sys.path
+sys.path.append('C:/Users/marce/Documents/Dokumente/Python Scripts/machine learning\
+                projekte/Own algorithms/Machine-Learning-in-Python/Perceptron Algorithm')
+from AdalineActivation import ADALINEActivation
+function = lambda x: 2*(mpmath.exp(x)/(1+mpmath.exp(x)))-1
+mpmath.diff(function, -1)
+
+
+
+model = ADALINEActivation(X,y, function)
+model.plotEvolutionOfRegLine(X, iterations = 20,min_acc = 0.99)
+
+for i in range(10):
+    model.performRegression(numberOfIterations = 500, min_acc = 0.99)
+    
+    model.accuracy(X,y)
+    model.loss()
+    
+    model.plotPredictions(X, addSeperationLine = True)
 
 
 
 
 
+learning_rate = 0.0001
+w = [0.5,-0.5]
+b = 0.5
+
+activationFunction = lambda x: 2*(mpmath.exp(x)/(1+mpmath.exp(x)))-1
+activationFunctionDerivative = lambda x: mpmath.diff(activationFunction, x)
+
+
+wTimesXPlusB = []
+for i in range(len(X_train)):
+    value = 0
+    for j in range(len(w)):
+        value += w[j] * X_train.iloc[i,:][j]
+    wTimesXPlusB.append(value + b)
+        
+derivatives = []
+for i in range(len(wTimesXPlusB)):
+    derivatives.append(float(activationFunctionDerivative(wTimesXPlusB[i])))
+
+gradientDecent = []
+for i in range(len(derivatives)):
+    gradientDecent.append(abs(y_train[i] - float(activationFunction(wTimesXPlusB[i])))\
+    * derivatives[i])
+    
+
+testMulti = []
+for j in range(len(w)):
+    sum = 0
+    for i in range(len(X_train)):
+        sum += (y_train[i] - float(activationFunction(wTimesXPlusB[i])))* X_train.iloc[:,j][i]\
+            * derivatives[i]
+    testMulti.append(sum)
+                                
+for i in range(len(w)):                    
+    w[i] = w[i] + learning_rate * testMulti[i]
+b = b + learning_rate * np.sum(gradientDecent)     
 
 
 
+def bisection(function, xmin, xmax,epsilon = 0.000001):
+    error = 1
+    count = 0
+    while error > epsilon:
+        xMiddle = (xmin + xmax)/2
+        if np.sign(function(xMiddle)) == np.sign(function(xmin)):
+            xmin = xMiddle
+        else:
+            xmax = xMiddle
+        count += 1
+        error = abs(function(xMiddle))
+    return xMiddle
 
+fct = lambda x: 4*x +x*x - 10
 
+bisection(fct, -1000,1000)
+
+fct(-5.741657456383109)
 
 
