@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Apr 26 22:07:50 2021
+ADALINE algorithmus to classify data. The class uses a sigmoid activation function 
+f(x) = e^/(1+e^)
 
+For more complex activation functions see ADALINEActivation.
+For less complex activation functions see ADALINELinear.
 @author: Marcel Pommer
 """
 
@@ -30,26 +34,32 @@ class ADALINESigmoid(LinearRegression):
 
         Parameters
         ----------
-        w_initial : TYPE, two dimensional array.
-            DESCRIPTION. Initial value for the slope. The default is [0,0].
+        w_initial : TYPE, n dimensional array.
+            DESCRIPTION. Initial value for the slope. The default is [0]^n.
         b_initial : TYPE, one dimensional int/double/float
-            DESCRIPTION. Initial value for the slope. The default is 0.
+            DESCRIPTION. Initial value for the intercept (bias). The default is 0.
         learning_rate : TYPE, double.
-            DESCRIPTION. Learning rate, usualy between 0.01 and 0.3. The default is 0.05.
+            DESCRIPTION. Learning rate, usualy between 0.000001 and 0.001. The default is 0.00005.
+            Caution, if learning rate is to high, the algorithm jumps from peak to peak
+            and does not converge!
         numberOfIterations : TYPE, integer
-            DESCRIPTION. Max Number of Interations. The default is 1 Mio.
+            DESCRIPTION. Max Number of Interations. The default is 10000.
         min_acc : TYPE, double.
             DESCRIPTION. As soon as the minimum accuracy is reached the algorithm stops.
             The default is 0.999.
-
+        test_size : TYPE, double(or int).
+            DESCRIPTION. Portion of data used for testing.
+        countIterations : TYPE, boolean.
+            DESCRIPTION. If set to true will count the number of iterations.
         Returns
         -------
-        w : TYPE: Two dimensional double.
+        w : TYPE: N dimensional double.
             DESCRIPTION. Slope for regression line.
         b : TYPE: Double
-            DESCRIPTION. Intercept for regression line.
+            DESCRIPTION. Intercept (bias) for regression line.
 
         '''
+
         if countIterations:
             count = 0
         X = self.X
@@ -121,7 +131,25 @@ class ADALINESigmoid(LinearRegression):
 
         
     def predictYourselfSigmoid(self, X, w,b):
-    
+        '''
+        Creats the predictions for w and b defined by the user.
+
+        Parameters
+        ----------
+        X : TYPE Data frame with N features.
+            DESCRIPTION.
+        w : TYPE n dm array, slope.
+            DESCRIPTION.
+        b : TYPE Intercept (bias).
+            DESCRIPTION.
+
+        Returns
+        -------
+        target_predict : TYPE
+            DESCRIPTION.
+
+        '''
+        
         target_predict = []
         for i in range(len(X)):
             sum = 0
@@ -135,10 +163,39 @@ class ADALINESigmoid(LinearRegression):
             
             
     def sigmoid(self, x):
+        '''
+        Sigmoid function.
+
+        Parameters
+        ----------
+        x : TYPE float/array
+            DESCRIPTION.
+
+        Returns
+        -------
+        TYPE float/array
+            DESCRIPTION. returns the value of the sigmoid(x)
+
+        '''        
+        
         sigmoid = lambda x: np.exp(x)/(1+np.exp(x))
         return sigmoid(x)
         
     def sigmoidDerivative(self, x):
+        '''
+        Sigmoid derivative function.
+
+        Parameters
+        ----------
+        x : TYPE float/array
+            DESCRIPTION.
+
+        Returns
+        -------
+        TYPE float/array
+            DESCRIPTION. returns the value of the dsigmoid(x)/dx
+
+        '''
         sigmoidDerivative = lambda x: self.sigmoid(x)*(1-self.sigmoid(x))
         return sigmoidDerivative(x)
         
@@ -149,6 +206,17 @@ class ADALINESigmoid(LinearRegression):
         return acc
         
     def loss(self):
+        '''
+        Loss function is: (y-2*sigmoid(w*x+b))^2
+
+        Returns
+        -------
+        TYPE float
+            DESCRIPTION. returns the loss.
+
+        '''
+        
+        
         X = self.X
         y = self.y
         w = self.w
@@ -185,7 +253,10 @@ class ADALINESigmoid(LinearRegression):
             DESCRIPTION. The default is ''.
         addSeperationLine : TYPE, boolean, if True adds seperation line
             DESCRIPTION. The default is False.
-
+        plotTrueTarget : TYPE, boolean, specifies if the seperation (different color)
+        is according to the true target or the regression target.        
+            DESCRIPTION. The default is True.
+            
         Returns
         -------
         Plot.
@@ -212,16 +283,24 @@ class ADALINESigmoid(LinearRegression):
         
     def __findZeroInFunction(self, ownW = 0, ownB = 0, linear = False):
         '''
-        Calculates zero point for the regression function
+        Calculates zero point for the regression function.
+
+        Parameters
+        ----------
+        ownW : TYPE, n-dim array
+            DESCRIPTION. slope
+        ownB : TYPE, float
+            DESCRIPTION. The default is 0.
+        linear : TYPE, optional
+            DESCRIPTION. The default is False.
 
         Returns
         -------
-        firstPoint : TYPE double array 2-dim
-            DESCRIPTION. first point
-        secondPoint : TYPE double arry 2-dim
-            DESCRIPTION. second point
+        TYPE
+            DESCRIPTION. Boundaries for the plot and 
+            two points to plot the line.            
 
-        '''
+        '''   
         X = self.X
         x_min = min(X.iloc[:,0]) - 1
         x_max = max(X.iloc[:,0]) + 1

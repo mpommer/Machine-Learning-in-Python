@@ -9,7 +9,11 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import load_iris
 import matplotlib.pyplot as plt
-pd.options.mode.chained_assignment = None 
+import sys
+sys.path
+sys.path.append('C:/Users/marce/Documents/Dokumente/Python Scripts/machine learning\
+                projekte/Own algorithms/Machine-Learning-in-Python/Perceptron Algorithm')
+#pd.options.mode.chained_assignment = None 
 
 #%%
 def computePredictions(X_train,slope,intercept):
@@ -208,27 +212,30 @@ model.plotTrainingAndTestWithPerceptron(X_train, X_test, y_train, y_test,
 
 
 
-#%% ADALINE 
+#%% ADALINE Linear sctivation function
+X = iris_dataset[['sepal length (cm)','sepal width (cm)']]
+y = iris_dataset['target']
 
 from AdalineAlgorithm import ADALINELinear
-from AdalineSigmoid import ADALINESigmoid
 
 model = ADALINELinear(X,y)
 w_initial, b_initial = [0.5,-0.5], -1
 model.performRegression(w_initial = w_initial, b_initial = b_initial,
-                        learning_rate=0.00005, numberOfIterations=100)
+                        learning_rate=0.00005, numberOfIterations=500)
 model.accuracy(X,y)
 model.plotPredictions(X, addSeperationLine = True)
 
 
 
 
+#%% ADALINE sigmoid activation function
+from AdalineSigmoid import ADALINESigmoid
 model = ADALINESigmoid(X,y)
 
 model.performRegression(numberOfIterations=2000, learning_rate = 0.0001)
 model.accuracy(X,y)
-
-
+model.loss()
+model.plotPredictions(X, addSeperationLine = True)
 
 
 

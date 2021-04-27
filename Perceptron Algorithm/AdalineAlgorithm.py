@@ -184,12 +184,13 @@ class ADALINELinear(LinearRegression):
     def plotPredictions(self, X, xlabel = '', ylabel = '', title = '', 
                         addSeperationLine = False, plotTrueTarget = True):
         '''
-        Scatter plot for the points of the data frame X.
+        Scatter plot for the points of the data frame X. Possibility to add the
+        seperation line.
 
         Parameters
         ----------
         X : TYPE
-            DESCRIPTION: Data Frame with two columns.
+            DESCRIPTION: Data Frame with n columns.
         xlabel : TYPE, optional
             DESCRIPTION. The default is ''.
         ylabel : TYPE, optional
@@ -198,7 +199,10 @@ class ADALINELinear(LinearRegression):
             DESCRIPTION. The default is ''.
         addSeperationLine : TYPE, boolean, if True adds seperation line
             DESCRIPTION. The default is False.
-
+        plotTrueTarget : TYPE, boolean, specifies if the seperation (different color)
+        is according to the true target or the regression target.        
+            DESCRIPTION. The default is True.
+            
         Returns
         -------
         Plot.
@@ -226,16 +230,25 @@ class ADALINELinear(LinearRegression):
         
     def __findZeroInFunction(self, ownW = 0, ownB = 0, linear = False):
         '''
-        Calculates zero point for the regression function
+        Calculates zero point for the regression function.
+
+        Parameters
+        ----------
+        ownW : TYPE, n-dim array
+            DESCRIPTION. slope
+        ownB : TYPE, float
+            DESCRIPTION. The default is 0.
+        linear : TYPE, optional
+            DESCRIPTION. The default is False.
 
         Returns
         -------
-        firstPoint : TYPE double array 2-dim
-            DESCRIPTION. first point
-        secondPoint : TYPE double arry 2-dim
-            DESCRIPTION. second point
+        TYPE
+            DESCRIPTION. Boundaries for the plot and 
+            two points to plot the line.            
 
-        '''
+        '''        
+        
         X = self.X
         x_min = min(X.iloc[:,0]) - 1
         x_max = max(X.iloc[:,0]) + 1
