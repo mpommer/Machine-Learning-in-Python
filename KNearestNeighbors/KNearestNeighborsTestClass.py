@@ -8,6 +8,7 @@ Created on Sun May  9 11:19:00 2021
 import numpy as np
 import warnings
 import pandas as pd
+from collections import Counter
 import sys
 sys.path
 sys.path.append('C:/Users/marce/Documents/Dokumente/Python Scripts/machine learning\
@@ -32,4 +33,5 @@ clf = knearestNeighbors(data)
 clf.fit(predictions)
 # getConfidence
 clf.getConfidence(predictions)
+clf.createPlot(predictions)
 

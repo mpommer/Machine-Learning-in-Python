@@ -14,6 +14,7 @@ from collections import Counter
 class knearestNeighbors:
     def __init__(self, data):
         self.data = data
+        self.colors =['b','g','r','k']
         
     def fit(self, predictions, numberNearestNeighbors = 3):
         data = self.data
@@ -67,12 +68,27 @@ class knearestNeighbors:
         
         return len(correct)/len(pred)
     
+    
     def createPlot(self, predictions):
+        new_dic = self.data_dict
+        colors = self.colors
+        index = 0
+        color_dic = {}
+        for k, v in list(new_dic.items()):
+            color_dic[k] = colors[index]
+            new_dic[colors[index]] = new_dic.pop(k)
+            index +=1
+       
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(1,1,1)
-        for index in self.data_dict:
-            for i in self.data_dict[index]:
-                plt.scatter(i[0],i[1], s= 50, color = i)
+        for index in new_dic:
+            for i in new_dic[index]:
+                plt.scatter(i[0],i[1], s= 50, color = index)
+        
+        for index in range(len(predictions)):
+            plt.scatter(predictions.iloc[[index]].values[0][0],predictions.iloc[[index]].values[0][1],
+                        s = 100, marker = '*', color = color_dic[self.predictions[index]])
+        plt.show()
             
         
 
