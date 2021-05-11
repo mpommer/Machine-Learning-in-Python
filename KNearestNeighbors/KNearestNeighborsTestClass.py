@@ -35,3 +35,31 @@ clf.fit(predictions)
 clf.getConfidence(predictions)
 clf.createPlot(predictions)
 
+
+
+
+
+#%% lets test the data for the iris data set
+from sklearn.datasets import load_iris
+from sklearn.utils import shuffle
+
+iris_dataset = pd.DataFrame(load_iris().data)
+target = load_iris().target
+flower_names = load_iris().target_names
+
+iris_dataset.columns = load_iris().feature_names
+iris_dataset['target'] = target
+
+iris_dataset.loc[ iris_dataset['target'] ==2, 'target'] = 1
+iris_dataset_shuffle = shuffle(iris_dataset)
+data_train = iris_dataset_shuffle[:-20]
+data_test = iris_dataset_shuffle[-20:]
+y_test = data_test['target'].reset_index(drop=True)
+X_test = data_test.drop('target', axis = 1)
+
+clf = knearestNeighbors(data_train)
+clf.fit(X_test)
+clf.getAccuracy(X_test,y_test)
+
+clf.createPlot(X_test)
+

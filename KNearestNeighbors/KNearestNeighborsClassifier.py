@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun May  9 18:08:36 2021
+K nearest neighbors classifier in order to classify unknown data
+into one of n classes. 
+The class can predict, plot those predctions and give the confidence.
 
-@author: marce
+@author: Marcel Pommer
 """
 
 import numpy as np
@@ -17,6 +20,24 @@ class knearestNeighbors:
         self.colors =['b','g','r','k']
         
     def fit(self, predictions, numberNearestNeighbors = 3):
+        '''
+        Fits the model.
+
+        Parameters
+        ----------
+        predictions : TYPE: array or data frame with the same amount 
+        of features as the data set.
+            DESCRIPTION.
+        numberNearestNeighbors : TYPE, integer, usualy between 3 and 7. 
+        Should be choosed wisely, such that there is no tie.
+            DESCRIPTION. The default is 3.
+
+        Returns
+        -------
+        predicted_group : the label of the predicted class
+            DESCRIPTION.
+
+        '''
         data = self.data
         labels = data.iloc[: , -1].drop_duplicates(keep='first', inplace=False)
         data_dict = {x:[] for x in labels}
@@ -55,11 +76,52 @@ class knearestNeighbors:
         return predicted_group
     
     def getConfidence(self, predictions, numberNearestNeighbors=3, new_prediction = False):
+        '''
+        calculates the confidence of the predictions (value between 0 and 1).
+
+        Parameters
+        ----------
+        predictions : features to predit.
+            DESCRIPTION.
+        numberNearestNeighbors : TYPE, optional
+            DESCRIPTION. The default is 3.
+        new_prediction : TYPE, boolean.
+            DESCRIPTION. If the predictions are the same which are used before in 
+            the fit method, the calculation speed can be increased. The default is False.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        '''
+        
         if new_prediction == True or self.confidence == None:
               self.fit(predictions = predictions, numberNearestNeighbors = numberNearestNeighbors)
         return self.confidence
     
-    def getAccuracy(self, predictions, y_test, numberNearestNeighbors=3, new_prediction = False):
+    def getAccuracy(self, predictions, y_test, numberNearestNeighbors=3, new_prediction = True):
+        '''
+        Calculates the accuracy in the sense of coorect/total. 
+        Not to be confused with the confidence.
+
+        Parameters
+        ----------
+        predictions : TYPE feature variables
+            DESCRIPTION.
+        y_test : TYPE correct labels
+            DESCRIPTION.
+        numberNearestNeighbors : TYPE, optional
+            DESCRIPTION. The default is 3.
+        new_prediction : TYPE, optional
+            DESCRIPTION. The default is False.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        '''
         if new_prediction == True or self.predictions == None:
             self.fit(predictions = predictions, numberNearestNeighbors = numberNearestNeighbors)
         
@@ -70,6 +132,20 @@ class knearestNeighbors:
     
     
     def createPlot(self, predictions):
+        '''
+        Creates the plot for the predictions.
+
+        Parameters
+        ----------
+        predictions : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        '''
+        
         new_dic = self.data_dict
         colors = self.colors
         index = 0
