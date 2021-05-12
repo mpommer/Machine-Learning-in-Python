@@ -245,29 +245,80 @@ model.plotPredictions(X, addSeperationLine = True)
 
 
 #%% Variable activation function
+iris_dataset = pd.DataFrame(load_iris().data)
+target = load_iris().target
+flower_names = load_iris().target_names
+
+iris_dataset.columns = load_iris().feature_names
+iris_dataset['target'] = target
+iris_dataset.loc[ iris_dataset['target'] ==2, 'target'] = 1
+iris_dataset.loc[ iris_dataset['target'] ==0, 'target'] = -1
+X = iris_dataset[['sepal length (cm)','sepal width (cm)']]
+y = iris_dataset['target']
+import matplotlib.animation as animation
 import mpmath
 mpmath.pretty = True
-
+'''
 data = [[1,2,1],[1,1,1],[0,1,1],[7,6,-1],[7,7,-1],[8,6,-1]]
 dataframe = pd.DataFrame(data, columns = ['one','two','target'])
 y = dataframe['target']
 X = dataframe.drop('target', axis = 1)
-
+'''
 
 #function = lambda x: x
 function = lambda x: 2*(mpmath.exp(x)/(1+mpmath.exp(x)))-1
-mpmath.diff(function, 0)
-function(0)
+
 
 from AdalineActivation import ADALINEActivation
 model = ADALINEActivation(X,y, function)
 
 model.performRegression(printProgress = True, learning_rate = 0.0005,test_size = 0,
-                        numberOfIterations = 100, continue_fit = True, min_acc = 1)
+                        numberOfIterations = 100, continue_fit = False, min_acc = 1)
 
 model.plotPredictions(X, addSeperationLine = True)
 model.plotEvolutionOfRegLine(X, iterations = 10, updatesPerIteration=50,
                              min_acc = 1)
 
 model.accuracy(X,y)
+
+
+
+def update():
+    model.performRegression(printProgress = True, learning_rate = 0.0005,test_size = 0,
+                        numberOfIterations = 30, continue_fit = True, min_acc = 1)
+    x0, x1, y0, y1 = model.pointsRegLine()
+    x = np.array([[x0, x1, y0, y1]])
+    
+    with open("regPoints.txt","w") as f:
+        np.savetxt(f,x, fmt="%f")
+
+
+
+fig = plt.figure()
+ax1 = fig.add_subplot(1,1,1)
+        
+def animate(i):
+    graph_data = X
+    graph_data['target'] = y
+    graph_data2 = open('regPoints.txt','r').read()
+    lines = graph_data2.split('\n')
+    update()
+    
+    xs = []
+    ys = []
+    for d in range(len(graph_data)):
+        xs.append(graph_data.iloc[d,:][0])
+        ys.append(graph_data.iloc[d,:][1])
+    for line in lines:
+        if len(line) > 1:
+            x0, x1, y0, y1 = line.split(' ')            
+            x0, x1, y0, y1 = float(x0), float(x1), float(y0), float(y1)
+    print(x0, x1, y0, y1)
+    ax1.clear()
+    ax1.plot([x0, y0], [x1, y1] , '-r', label='Seperation function')
+    ax1.scatter(graph_data.iloc[:,0],graph_data.iloc[:,1], c = graph_data['target'])
+        
+ani = animation.FuncAnimation(fig, animate, interval = 100, repeat=False)
+plt.show()
+
 

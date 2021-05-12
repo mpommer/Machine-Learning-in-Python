@@ -99,7 +99,7 @@ class ADALINEActivation(LinearRegression):
         else:
             b = b_initial
         
-
+        print(w,b)
         for i in range(numberOfIterations):
             y_pred_train = self.predictYourselfActivation(X_train, w, b)
             y_pred_test = self.predictYourselfActivation(X_test, w, b)
@@ -131,13 +131,14 @@ class ADALINEActivation(LinearRegression):
             for a in range(len(derivatives)):
                 gradientDecent.append((y_train[a] - self.activationFunction(wTimesXPlusB[a]))\
                                       * derivatives[a])
+            
                    
             testMulti = []
             for j in range(len(w)):
                 sum = 0
                 for a in range(len(X_train)):
                     sum += gradientDecent[a]* X_train.iloc[a,:][j]
-                        
+                       
                 testMulti.append(sum)
             
             
@@ -305,6 +306,7 @@ class ADALINEActivation(LinearRegression):
         else:
             X['target'] = self.predictYourselfActivation(X, self.w, self.b)
         
+        print(x0,x1)
         plt.scatter(X.iloc[:,0],X.iloc[:,1], c = X['target'])
         if addSeperationLine:
             plt.plot([x0[0], x1[0]], [x0[1], x1[1]] , '-r', label='Seperation function')
@@ -359,8 +361,14 @@ class ADALINEActivation(LinearRegression):
         
         
         x0 = 0
-        y0 = (zero-b)/w[1]
-        x1 = (zero-b)/w[0]
+        if w[1] !=0:
+            y0 = (zero-b)/w[1]
+        else:
+            y0 = 0
+        if w[0] !=0:
+            x1 = (zero-b)/w[0]
+        else:
+            x1 = 0
         y1 = 0
 
         if x0 > x1:
@@ -378,6 +386,10 @@ class ADALINEActivation(LinearRegression):
         secondPoint.append(function(x_max))       
               
         return firstPoint, secondPoint, x_min, x_max, y_min, y_max
+    
+    def pointsRegLine(self):
+        firstPoint, secondPoint, x_min, x_max, y_min, y_max = self.__findZeroInFunction()        
+        return firstPoint[0], firstPoint[1], secondPoint[0], secondPoint[1]
                 
     def bisection(self, function, xmin = -100000, xmax= 1000000,epsilon = 0.000001):
         '''
