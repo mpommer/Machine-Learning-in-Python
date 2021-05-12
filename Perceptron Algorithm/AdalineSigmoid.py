@@ -28,7 +28,8 @@ class ADALINESigmoid(LinearRegression):
         
         
     def performRegression(self, w_initial= 0, b_initial=0, learning_rate=0.00005, 
-        numberOfIterations=10000, min_acc=0.999, test_size = 0.2, countIterations = False):
+        numberOfIterations=10000, min_acc=0.999, test_size = 0.2, countIterations = False,
+        printPogress = False, continue_fit = False):
         '''
         Performs the algorithm.
 
@@ -83,7 +84,8 @@ class ADALINESigmoid(LinearRegression):
             w,b = self.w, b_initial
         else:
             w, b = w_initial, b_initial
-        
+        if continue_fit:
+            w,b = self.w,self.b
         
 
         for i in range(numberOfIterations):
@@ -101,10 +103,10 @@ class ADALINESigmoid(LinearRegression):
 
         
             wTimesXPlusB = []
-            for i in range(len(X_train)):
+            for a in range(len(X_train)):
                 value = 0
                 for j in range(len(w)):
-                    value += w[j] * X_train.iloc[i,:][j]
+                    value += w[j] * X_train.iloc[a,:][j]
                 wTimesXPlusB.append(value + b)
             
                         
@@ -113,14 +115,21 @@ class ADALINESigmoid(LinearRegression):
             testMulti = []
             for j in range(len(w)):
                 sum = 0
-                for i in range(len(X_train)):
-                    sum += (y_train[i] - (2* self.sigmoid(wTimesXPlusB[i])-1))* X_train.iloc[:,j][i]\
-                        * self.sigmoidDerivative(wTimesXPlusB[i])*2
+                for a in range(len(X_train)):
+                    sum += (y_train[a] - (2* self.sigmoid(wTimesXPlusB[a])-1))* X_train.iloc[:,j][a]\
+                        * self.sigmoidDerivative(wTimesXPlusB[a])*2
                 testMulti.append(sum)
                             
-            for i in range(len(w)):                    
-                w[i] = w[i] + learning_rate * testMulti[i]
-            b = b + learning_rate * np.sum(gradientDecent)     
+            for a in range(len(w)):                    
+                w[a] = w[a] + learning_rate * testMulti[a]
+            b = b + learning_rate * np.sum(gradientDecent)
+            
+            if printPogress and i%10 ==0:
+                print("W: ", w)
+                print("b: ", b)
+                self.w = w
+                self.b = b
+                print("Loss: ", self.loss())
 
         self.w = w
         self.b = b

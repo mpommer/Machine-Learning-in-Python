@@ -2,6 +2,7 @@
 """
 Created on Sat Apr 17 09:08:25 2021
 Test of the class Perceptron which performs the Perceptron algorithm.
+
 @author: Marcel Pommer
 """
 #%%
@@ -11,9 +12,9 @@ from sklearn.datasets import load_iris
 import math
 import matplotlib.pyplot as plt
 import sys
-sys.path
-sys.path.append('C:/Users/marce/Documents/Dokumente/Python Scripts/machine learning\
-                projekte/Own algorithms/Machine-Learning-in-Python/Perceptron Algorithm')
+import os
+path = 'C:/Users/marce/Documents/Dokumente/Python Scripts/machine learning projekte/Own algorithms/Machine-Learning-in-Python/Perceptron Algorithm'
+os.chdir(path)
 #pd.options.mode.chained_assignment = None 
 
 #%%
@@ -72,6 +73,8 @@ iris_dataset.columns = load_iris().feature_names
 iris_dataset['target'] = target
 
 
+
+#%%
 plt.scatter(iris_dataset['sepal length (cm)'][0:50],
    iris_dataset['sepal width (cm)'][0:50])
 plt.scatter(iris_dataset['sepal length (cm)'][50:100],
@@ -233,7 +236,7 @@ model.plotPredictions(X, addSeperationLine = True)
 from AdalineSigmoid import ADALINESigmoid
 model = ADALINESigmoid(X,y)
 
-model.performRegression(numberOfIterations=2000, learning_rate = 0.0001)
+model.performRegression(numberOfIterations=1000, learning_rate = 0.0001, printPogress = True)
 model.accuracy(X,y)
 model.loss()
 model.plotPredictions(X, addSeperationLine = True)
@@ -242,23 +245,29 @@ model.plotPredictions(X, addSeperationLine = True)
 
 
 #%% Variable activation function
-
 import mpmath
 mpmath.pretty = True
-x = 2
-function = lambda x: x**2 +x
-mpmath.diff(function, x)
 
-import sys
-sys.path
-sys.path.append('C:/Users/marce/Documents/Dokumente/Python Scripts/machine learning\
-                projekte/Own algorithms/Machine-Learning-in-Python/Perceptron Algorithm')
-from AdalineActivation import ADALINEActivation
+data = [[1,2,1],[1,1,1],[0,1,1],[7,6,-1],[7,7,-1],[8,6,-1]]
+dataframe = pd.DataFrame(data, columns = ['one','two','target'])
+y = dataframe['target']
+X = dataframe.drop('target', axis = 1)
+
+
+#function = lambda x: x
 function = lambda x: 2*(mpmath.exp(x)/(1+mpmath.exp(x)))-1
-mpmath.diff(function, -1)
+mpmath.diff(function, 0)
+function(0)
 
-
-
+from AdalineActivation import ADALINEActivation
 model = ADALINEActivation(X,y, function)
-model.plotEvolutionOfRegLine(X, iterations = 20,min_acc = 0.99)
+
+model.performRegression(printProgress = True, learning_rate = 0.0005,test_size = 0,
+                        numberOfIterations = 100, continue_fit = True, min_acc = 1)
+
+model.plotPredictions(X, addSeperationLine = True)
+model.plotEvolutionOfRegLine(X, iterations = 10, updatesPerIteration=50,
+                             min_acc = 1)
+
+model.accuracy(X,y)
 

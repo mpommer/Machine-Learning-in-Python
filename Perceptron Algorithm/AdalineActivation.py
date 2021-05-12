@@ -12,7 +12,8 @@ For less complex activation functions see ADALINELinear (f(x) = x).
 @author: Marcel Pommer
 """
 
-
+from matplotlib.animation import FuncAnimation
+from IPython.display import HTML
 import numpy as np
 import matplotlib.pyplot as plt
 import mpmath 
@@ -34,8 +35,9 @@ class ADALINEActivation(LinearRegression):
         
         
         
-    def performRegression(self, w_initial= 0, b_initial=0, learning_rate=0.00005, 
-        numberOfIterations=10000, min_acc=0.95, test_size = 0.2, countIterations = False):
+    def performRegression(self, w_initial= 0, b_initial=0, learning_rate=0.005, 
+        numberOfIterations=1000, min_acc=0.95, test_size = 0.2, countIterations = False,
+        printProgress = False, continue_fit = False):
         '''
         Performs the algorithm.
 
@@ -86,11 +88,16 @@ class ADALINEActivation(LinearRegression):
         y_test = y_test.reset_index(drop=True)
 
         # initialize w and b
+        if continue_fit:
+            w,b = self.w, self.b
         if w_initial ==0:
-            w,b = self.w, b_initial
+            w = self.w
         else:
-            w, b = w_initial, b_initial
-        
+            w = w_initial
+        if b_initial ==0:
+            b = self.b
+        else:
+            b = b_initial
         
 
         for i in range(numberOfIterations):
@@ -106,34 +113,45 @@ class ADALINEActivation(LinearRegression):
             if countIterations:
                 count += 1
 
-        
+            
             wTimesXPlusB = []
-            for i in range(len(X_train)):
+            for a in range(len(X_train)):
                 value = 0
                 for j in range(len(w)):
-                    value += w[j] * X_train.iloc[i,:][j]
+                    value += w[j] * X_train.iloc[a,:][j]
                 wTimesXPlusB.append(value + b)
             
+            
             derivatives = []
-            for i in range(len(wTimesXPlusB)):
-                derivatives.append(float(self.activationFunctionDerivative(wTimesXPlusB[i])))
+            for a in range(len(wTimesXPlusB)):
+                derivatives.append(float(self.activationFunctionDerivative(wTimesXPlusB[a])))
+            
             
             gradientDecent = []
-            for i in range(len(derivatives)):
-                gradientDecent.append(abs(y_train[i] - self.activationFunction(wTimesXPlusB[i]))\
-                                      * derivatives[i])
-                    
+            for a in range(len(derivatives)):
+                gradientDecent.append((y_train[a] - self.activationFunction(wTimesXPlusB[a]))\
+                                      * derivatives[a])
+                   
             testMulti = []
             for j in range(len(w)):
                 sum = 0
-                for i in range(len(X_train)):
-                    sum += (y_train[i] - self.activationFunction(wTimesXPlusB[i]))* X_train.iloc[:,j][i]\
-                        * derivatives[i]
+                for a in range(len(X_train)):
+                    sum += gradientDecent[a]* X_train.iloc[a,:][j]
+                        
                 testMulti.append(sum)
-                            
-            for i in range(len(w)):                    
-                w[i] = w[i] + learning_rate * testMulti[i]
-            b = b + learning_rate * np.sum(gradientDecent)     
+            
+            
+            for a in range(len(w)):                    
+                w[a] = w[a] + learning_rate * testMulti[a]
+            b = b + learning_rate * np.sum(gradientDecent) 
+            
+            if printProgress and i%10 ==0:
+                print("w : ", w)
+                print("b : ", b)
+                self.w = w
+                self.b = b
+                
+                print("loss :", self.loss())
 
         self.w = w
         self.b = b
@@ -243,7 +261,8 @@ class ADALINEActivation(LinearRegression):
                  value += w[j] * X.iloc[i,:][j]
              wTimesXPlusB.append(self.activationFunction(value + b))
         
-                        
+        
+        
         gradientDecent = []
         for i in range(len(wTimesXPlusB)):
             gradientDecent.append((y[i] - wTimesXPlusB[i]) **2)
@@ -280,7 +299,7 @@ class ADALINEActivation(LinearRegression):
 
         '''
         X = X.copy(deep=True)
-        x0, x1, xmin,xmax, ymin, ymax = self.__findZeroInFunction(X)
+        x0, x1, xmin,xmax, ymin, ymax = self.__findZeroInFunction()
         if plotTrueTarget:
             X['target'] = self.y
         else:
@@ -327,7 +346,7 @@ class ADALINEActivation(LinearRegression):
         if linear:
             return x_min, x_max, y_min, y_max
         
-        if type(ownW) is int:
+        if type(ownW) is int and ownW!=0:
             w = ownW
         else:
             w = self.w
@@ -393,7 +412,9 @@ class ADALINEActivation(LinearRegression):
             error = abs(function(xMiddle))
         return xMiddle        
         
-    def plotEvolutionOfRegLine(self, X, iterations=5, updatesPerIteration = 500, min_acc = 0.95):
+    
+    def plotEvolutionOfRegLine(self, X, iterations=5,b_initial = 0, updatesPerIteration = 100,
+                               w_initial= 0, learning_rate = 0.0001, min_acc = 0.99):
         '''
         Plots the evolution of the regression line. Migh be interesting to obsere the
         convergence.
@@ -415,5 +436,62 @@ class ADALINEActivation(LinearRegression):
 
         '''
         for i in range(iterations):
-            self.performRegression(numberOfIterations = updatesPerIteration, min_acc=min_acc)
+            self.performRegression(numberOfIterations = updatesPerIteration, min_acc=min_acc,
+                                  b_initial = b_initial, learning_rate = learning_rate, w_initial = w_initial)
             self.plotPredictions(X, addSeperationLine = True)
+     
+            
+    def htmlAnimationOfRegLine(self, X,w_initial = 0,b_initial = 0, iterations=5, updatesPerIteration = 100, min_acc = 0.99,
+         xlabel = '', ylabel = '', title = '', plotTrueTarget = True,
+         learning_rate = 0.005):
+        
+        fig, ax = plt.subplots()
+        xdata, ydata = [], []
+        ln, = plt.plot([], [], 'ro')
+        
+        def init():
+            ax.set_xlim(0, 2*np.pi)
+            ax.set_ylim(-1, 1)
+            return ln,
+        
+        def update(frame):
+            xdata.append(frame)
+            #print(xdata)
+            ydata.append(np.sin(frame))
+            ln.set_data(xdata, ydata)
+            return ln,
+        #print('test')
+        ani = FuncAnimation(fig, update, frames=np.linspace(0, 2*np.pi, 10),
+                            init_func=init, blit=True)
+        plt.show()
+
+'''
+        X = X.copy(deep=True)
+        fig, ax = plt.subplots()
+        ln, = plt.plot([],[])
+        xdata, ydata = [], []
+        
+        def init():
+            x0, x1, xmin,xmax, ymin, ymax = self.__findZeroInFunction(X)
+            X['target'] = self.y
+            ax.scatter(X.iloc[:,0],X.iloc[:,1], c = X['target'])
+            ax.set_xlim(xmin,xmax)
+            ax.set_ylim(ymin,ymax)
+            return ln,
+        
+        def animate(frame):
+            x0, x1, xmin,xmax, ymin, ymax = self.__findZeroInFunction(X)            
+            #ax.plot([x0[0], x1[0]], [x0[1], x1[1]] , '-r', label='Seperation function')
+            xdata.append(x0[0], x1[0])
+            ydata.append(x0[1], x1[1])
+            ln.set_data(xdata,ydata)
+            return ln,
+        
+        self.performRegression(numberOfIterations = updatesPerIteration, min_acc=min_acc,
+                   b_initial = b_initial, learning_rate=learning_rate, w_initial = w_initial)  
+        
+        ani = FuncAnimation(fig, animate, init_func=init, blit = True)
+        plt.show()
+        
+        #HTML(anim.to_html5_video())
+'''
